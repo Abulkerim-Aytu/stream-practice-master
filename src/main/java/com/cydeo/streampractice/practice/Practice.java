@@ -182,8 +182,7 @@ public class Practice {
         //TODO Implement the method
         return employeeService.readAll().stream()
                 .filter(employee -> employee.getFirstName().equals("Douglas") && employee.getLastName().equals("Grant"))
-                .map(Employee::getSalary)
-                .findFirst().get();
+                .findFirst().orElseThrow(()->new Exception("Douglas Grant not found")).getSalary();
     }
 
     // Display the maximum salary an employee gets
@@ -215,19 +214,10 @@ public class Practice {
     public static Long getMaxSalaryInAmericasRegion() throws Exception {
         //TODO Implement the method
 
-
-//        List<Region>regin =regionService.readAll().stream()
-//                        .filter(region -> region.getRegionName().equals("Americas"))
-//                .collect(Collectors.toList());
-//
-//        List<Location> getregion = locationService.readAll().stream()
-//                .filter(location -> location.getCountry() == regin)
-//                .collect(Collectors.toList());
-//
-//        long salary = getregion.stream()
-//                .max(Comparator.comparing(getregion,)).get();
-
-        return null;
+        return departmentService.readAll().stream()
+                .filter(department -> department.getLocation().getCountry().getRegion().equals("Americas"))
+                .map(department -> department.getManager().getSalary())
+                .max(Comparator.naturalOrder()).orElseThrow(()-> new Exception("null"));
     }
 
     // Display the second maximum salary an employee gets
@@ -237,13 +227,17 @@ public class Practice {
                 .map(employee -> employee.getSalary())
                 .sorted(Comparator.reverseOrder())
                 .skip(1)
-                .findFirst().get();
+                .findFirst().orElseThrow();
     }
 
     // Display the employee(s) who gets the second maximum salary
     public static List<Employee> getSecondMaxSalaryEmployee() {
         //TODO Implement the method
-        return null;
+        return employeeService.readAll().stream()
+                .sorted(Comparator.comparing(Employee::getSalary, Comparator.reverseOrder()))
+                .skip(1)
+                .limit(1)
+                .collect(Collectors.toList());
     }
 
     // Display the minimum salary an employee gets
@@ -325,7 +319,11 @@ public class Practice {
     // Display the employee whose first name is 'Alyssa' and manager's first name is 'Eleni' and department name is 'Sales'
     public static Employee getEmployeeWhoseFirstNameIsAlyssaAndManagersFirstNameIsEleniAndDepartmentNameIsSales() throws Exception {
         //TODO Implement the method
-        return new Employee();
+        return employeeService.readAll().stream()
+                .filter(employee -> employee.getFirstName().equals("Alyssa"))
+                .filter(employee -> employee.getManager().getFirstName().equals("Eleni"))
+                .filter(employee -> employee.getDepartment().getDepartmentName().equals("Sales"))
+                .findAny().orElseThrow(()->new Exception("Not Found"));
     }
 
     // Display all the job histories in ascending order by start date
@@ -367,7 +365,16 @@ public class Practice {
     // Display the employee whose job history start date is 01.01.2007 and job history end date is 31.12.2007 and department's name is 'Shipping'
     public static Employee getEmployeeOfJobHistoryWhoseStartDateIsFirstDayOfJanuary2007AndEndDateIsLastDayOfDecember2007AndDepartmentNameIsShipping() throws Exception {
         //TODO Implement the method
-        return new Employee();
+        LocalDate startDate = LocalDate.of(2007, 1, 1);
+        LocalDate endDate = LocalDate.of(2007, 12, 31);
+        String departmentName = "Shipping";
+        return jobHistoryService.readAll().stream()
+                .filter(jobHistory -> jobHistory.getStartDate().equals(startDate))
+                .filter(jobHistory -> jobHistory.getEndDate().equals(endDate))
+                .filter(jobHistory -> jobHistory.getDepartment().getDepartmentName().equals(departmentName))
+                .findFirst() // Find the first matching job history (assuming there is only one such record)
+                .map(JobHistory::getEmployee) // Extract the employee from the matching job history
+                .orElse(null);
     }
 
     // Display all the employees whose first name starts with 'A'
