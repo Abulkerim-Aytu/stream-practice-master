@@ -182,11 +182,11 @@ public class Practice {
         //TODO Implement the method
         return employeeService.readAll().stream()
                 .filter(employee -> employee.getFirstName().equals("Douglas") && employee.getLastName().equals("Grant"))
-                .findFirst().orElseThrow(()->new Exception("Douglas Grant not found")).getSalary();
+                .findFirst().orElseThrow(() -> new Exception("Douglas Grant not found")).getSalary();
     }
 
     // Display the maximum salary an employee gets
-    public static Long getMaxSalary() throws Exception {
+    public static Long getMaxSalary() {
         return employeeService.readAll().stream()
                 .max(Comparator.comparing(Employee::getSalary))
                 .get().getSalary();
@@ -196,8 +196,11 @@ public class Practice {
     public static List<Employee> getMaxSalaryEmployee() {
         //TODO Implement the method
         return employeeService.readAll().stream()
-                .max(Comparator.comparing(Employee::getSalary))
-                .stream().collect(Collectors.toList());
+                .filter(employee -> employee.getSalary().equals(getMaxSalary()))
+                .collect(Collectors.toList());
+//        return employeeService.readAll().stream()
+//                .max(Comparator.comparing(Employee::getSalary))
+//                .stream().collect(Collectors.toList());
     }
 
     // Display the max salary employee's job
@@ -207,27 +210,36 @@ public class Practice {
                 .max(Comparator.comparing(Employee::getSalary))
                 .stream()
                 .map(Employee::getJob)
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new Exception("Douglas Grant not found"));
     }
 
     // Display the max salary in Americas Region
     public static Long getMaxSalaryInAmericasRegion() throws Exception {
         //TODO Implement the method
 
-        return departmentService.readAll().stream()
-                .filter(department -> department.getLocation().getCountry().getRegion().equals("Americas"))
-                .map(department -> department.getManager().getSalary())
-                .max(Comparator.naturalOrder()).orElseThrow(()-> new Exception("null"));
+        return employeeService.readAll().stream()
+                .filter(employee -> employee.getDepartment()
+                        .getLocation().getCountry().getRegion()
+                        .getRegionName().equals("Americas"))
+                .max(Comparator.comparing(Employee::getSalary))
+                .get().getSalary();
     }
 
     // Display the second maximum salary an employee gets
-    public static Long getSecondMaxSalary() throws Exception {
+    public static Long getSecondMaxSalary() {
         //TODO Implement the method
         return employeeService.readAll().stream()
-                .map(employee -> employee.getSalary())
+                .map(Employee::getSalary)
                 .sorted(Comparator.reverseOrder())
                 .skip(1)
                 .findFirst().orElseThrow();
+
+//       return employeeService.readAll().stream()
+//                .filter(employee -> employee.getDepartment()
+//                        .getLocation().getCountry().getRegion()
+//                        .getRegionName().equals("Americas"))
+//                .max(Comparator.comparing(Employee::getSalary))
+//                .get().getSalary();
     }
 
     // Display the employee(s) who gets the second maximum salary
@@ -323,7 +335,7 @@ public class Practice {
                 .filter(employee -> employee.getFirstName().equals("Alyssa"))
                 .filter(employee -> employee.getManager().getFirstName().equals("Eleni"))
                 .filter(employee -> employee.getDepartment().getDepartmentName().equals("Sales"))
-                .findAny().orElseThrow(()->new Exception("Not Found"));
+                .findAny().orElseThrow(() -> new Exception("Not Found"));
     }
 
     // Display all the job histories in ascending order by start date
